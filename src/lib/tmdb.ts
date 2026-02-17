@@ -101,7 +101,7 @@ export interface TMDBMovie {
     results: { key: string; site: string; type: string; name: string }[];
   };
   "watch/providers"?: {
-    results: Record<string, { flatrate?: { provider_name: string; logo_path: string }[] }>;
+    results: Record<string, { link?: string; flatrate?: { provider_name: string; logo_path: string }[] }>;
   };
   similar?: { results: TMDBMovie[] };
   keywords?: { keywords: { id: number; name: string }[] };
