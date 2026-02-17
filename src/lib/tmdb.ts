@@ -11,13 +11,6 @@ export const getBackdropUrl = (path: string | null) => getImageUrl(path, "w1280"
 
 async function tmdbFetch(endpoint: string, params: Record<string, string> = {}) {
   const searchParams = new URLSearchParams({ endpoint, ...params });
-  const { data, error } = await supabase.functions.invoke("tmdb", {
-    body: null,
-    headers: {},
-    method: "GET",
-  });
-
-  // Use fetch directly since invoke doesn't support GET params well
   const projectUrl = import.meta.env.VITE_SUPABASE_URL;
   const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   
