@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import StarRating from "@/components/StarRating";
 import MovieCard from "@/components/MovieCard";
-import { Bookmark, BookmarkCheck, Eye, Clock, ExternalLink, MessageSquare, Star } from "lucide-react";
+import { Bookmark, BookmarkCheck, Eye, Clock, ExternalLink, MessageSquare, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -62,6 +62,19 @@ export default function MovieDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rating", tmdbId] });
       toast.success("Rating saved!");
+    },
+  });
+
+  const clearRatingMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("user_ratings").delete().eq("user_id", user!.id).eq("tmdb_id", tmdbId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rating", tmdbId] });
+      queryClient.invalidateQueries({ queryKey: ["user-ratings-list"] });
+      setNotes("");
+      toast.success("Rating cleared!");
     },
   });
 
@@ -184,9 +197,21 @@ export default function MovieDetailPage() {
                 {/* Rating & Review — only if watched */}
                 {(isWatched || showReview) ? (
                   <div className="glass-panel rounded-xl p-5 space-y-4">
-                    <h3 className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Star className="w-4 h-4 text-primary" /> Your Review
-                    </h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
+                        <Star className="w-4 h-4 text-primary" /> Your Review
+                      </h3>
+                      {userRating && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => clearRatingMutation.mutate()}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1 text-xs"
+                        >
+                          <Trash2 className="w-3 h-3" /> Clear Rating
+                        </Button>
+                      )}
+                    </div>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1.5">Rating</p>
                       <StarRating rating={userRating?.rating ?? 0} onRate={(r) => rateMutation.mutate(r)} size="lg" />
