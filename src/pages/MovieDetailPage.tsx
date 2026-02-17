@@ -116,7 +116,9 @@ export default function MovieDetailPage() {
   const cast = movie.credits?.cast?.slice(0, 8) ?? [];
   const trailer = movie.videos?.results?.find((v: any) => v.type === "Trailer" && v.site === "YouTube");
   const similar = movie.similar?.results?.slice(0, 10) ?? [];
-  const providers = movie["watch/providers"]?.results?.US?.flatrate ?? [];
+  const watchProviders = movie["watch/providers"]?.results?.US;
+  const providers = watchProviders?.flatrate ?? [];
+  const watchLink = watchProviders?.link as string | undefined;
 
   return (
     <div className="min-h-screen">
@@ -211,9 +213,16 @@ export default function MovieDetailPage() {
                 <p className="text-sm text-muted-foreground mb-2">Stream on</p>
                 <div className="flex gap-2">
                   {providers.map((p: any) => (
-                    <div key={p.provider_name} className="w-10 h-10 rounded-lg overflow-hidden" title={p.provider_name}>
+                    <a
+                      key={p.provider_name}
+                      href={watchLink || `https://www.themoviedb.org/movie/${tmdbId}/watch`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 rounded-lg overflow-hidden hover:ring-2 hover:ring-primary transition-all"
+                      title={`Watch on ${p.provider_name}`}
+                    >
                       <img src={getImageUrl(p.logo_path, "w92")} alt={p.provider_name} className="w-full h-full object-cover" />
-                    </div>
+                    </a>
                   ))}
                 </div>
               </div>
