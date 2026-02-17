@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import StarRating from "@/components/StarRating";
 import MovieCard from "@/components/MovieCard";
-import { Bookmark, BookmarkCheck, Eye, Clock, ExternalLink } from "lucide-react";
+import { Bookmark, BookmarkCheck, Eye, Clock, ExternalLink, MessageSquare, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -94,6 +94,16 @@ export default function MovieDetailPage() {
     },
   });
 
+  const handleWatchAndReview = async () => {
+    if (!isWatched) {
+      await supabase.from("watched").insert({ user_id: user!.id, tmdb_id: tmdbId });
+      queryClient.invalidateQueries({ queryKey: ["watched-check", tmdbId] });
+    }
+    setShowReview(true);
+  };
+
+  const [showReview, setShowReview] = useState(false);
+
   if (isLoading) {
     return <div className="min-h-screen pt-20 flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
   }
@@ -150,16 +160,48 @@ export default function MovieDetailPage() {
                     {inWatchlist ? <BookmarkCheck className="w-4 h-4 text-primary" /> : <Bookmark className="w-4 h-4" />}
                     {inWatchlist ? "In Watchlist" : "Add to Watchlist"}
                   </Button>
-                  <Button variant="outline" onClick={() => watchedMutation.mutate()} className="gap-2">
-                    <Eye className="w-4 h-4" />
-                    {isWatched ? "Watched ✓" : "Mark Watched"}
-                  </Button>
+                  {isWatched ? (
+                    <Button variant="outline" onClick={() => watchedMutation.mutate()} className="gap-2 border-primary/40 text-primary">
+                      <Eye className="w-4 h-4" />
+                      Watched ✓
+                    </Button>
+                  ) : (
+                    <Button variant="outline" onClick={() => watchedMutation.mutate()} className="gap-2">
+                      <Eye className="w-4 h-4" />
+                      Mark Watched
+                    </Button>
+                  )}
+                  {!isWatched && (
+                    <Button onClick={handleWatchAndReview} className="gap-2">
+                      <MessageSquare className="w-4 h-4" />
+                      I've Watched This — Rate & Review
+                    </Button>
+                  )}
                 </div>
 
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Your Rating</p>
-                  <StarRating rating={userRating?.rating ?? 0} onRate={(r) => rateMutation.mutate(r)} size="lg" />
-                </div>
+                {/* Rating & Review — only if watched */}
+                {(isWatched || showReview) ? (
+                  <div className="glass-panel rounded-xl p-5 space-y-4">
+                    <h3 className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
+                      <Star className="w-4 h-4 text-primary" /> Your Review
+                    </h3>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1.5">Rating</p>
+                      <StarRating rating={userRating?.rating ?? 0} onRate={(r) => rateMutation.mutate(r)} size="lg" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1.5">Notes (optional)</p>
+                      <textarea
+                        value={notes || userRating?.notes || ""}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="What did you think about this movie?"
+                        className="w-full h-20 px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">Mark as watched or click "I've Watched This" to rate & review</p>
+                )}
               </div>
             )}
 
