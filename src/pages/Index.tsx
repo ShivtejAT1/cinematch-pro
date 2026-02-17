@@ -14,11 +14,9 @@ export default function Index() {
   const nowPlaying = useQuery({ queryKey: ["nowPlaying"], queryFn: () => getNowPlayingMovies() });
   const upcoming = useQuery({ queryKey: ["upcoming"], queryFn: () => getUpcomingMovies() });
 
-  const heroMovie = trending.data?.results?.[0] ?? null;
-
   return (
     <div className="min-h-screen">
-      <HeroSection movie={heroMovie} isLoading={trending.isLoading} />
+      <HeroSection movies={trending.data?.results ?? []} isLoading={trending.isLoading} />
 
       <div className="container mx-auto px-4 space-y-10 pb-16 -mt-16 relative z-10">
         {/* Surprise Me button */}
