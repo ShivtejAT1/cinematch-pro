@@ -1,11 +1,12 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getMovieDetails, getImageUrl, getBackdropUrl, GENRE_MAP, TMDBMovie } from "@/lib/tmdb";
+import { getMovieDetails, getMoviesByGenre, getImageUrl, getBackdropUrl, GENRE_MAP, TMDBMovie } from "@/lib/tmdb";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import StarRating from "@/components/StarRating";
 import MovieCard from "@/components/MovieCard";
-import { Bookmark, BookmarkCheck, Eye, Clock, ExternalLink, MessageSquare, Star, Trash2 } from "lucide-react";
+import MovieCarousel from "@/components/MovieCarousel";
+import { Bookmark, BookmarkCheck, Eye, MessageSquare, Star, Trash2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -23,6 +24,21 @@ export default function MovieDetailPage() {
     queryKey: ["movie", tmdbId],
     queryFn: () => getMovieDetails(tmdbId),
     enabled: !!tmdbId,
+  });
+
+  // Genre-based recommendations (loaded after movie details arrive)
+  const { data: genreRec1 } = useQuery({
+    queryKey: ["genre-rec", movie?.genres?.[0]?.id ?? movie?.genre_ids?.[0]],
+    queryFn: () => getMoviesByGenre(movie!.genres![0]?.id ?? movie!.genre_ids![0]),
+    enabled: !!(movie?.genres?.[0]?.id ?? movie?.genre_ids?.[0]),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const { data: genreRec2 } = useQuery({
+    queryKey: ["genre-rec", movie?.genres?.[1]?.id ?? movie?.genre_ids?.[1]],
+    queryFn: () => getMoviesByGenre(movie!.genres![1]?.id ?? movie!.genre_ids![1]),
+    enabled: !!(movie?.genres?.[1]?.id ?? movie?.genre_ids?.[1]),
+    staleTime: 10 * 60 * 1000,
   });
 
   // User-specific data
@@ -129,10 +145,14 @@ export default function MovieDetailPage() {
   const director = movie.credits?.crew?.find((c: any) => c.job === "Director");
   const cast = movie.credits?.cast?.slice(0, 8) ?? [];
   const trailer = movie.videos?.results?.find((v: any) => v.type === "Trailer" && v.site === "YouTube");
-  const similar = movie.similar?.results?.slice(0, 10) ?? [];
+  const similar = movie.similar?.results?.slice(0, 20) ?? [];
   const watchProviders = movie["watch/providers"]?.results?.US;
   const providers = watchProviders?.flatrate ?? [];
   const watchLink = watchProviders?.link as string | undefined;
+
+  // Primary genre for "Because you like X" recommendation row
+  const primaryGenreId = movie.genres?.[0]?.id ?? movie.genre_ids?.[0];
+  const secondaryGenreId = movie.genres?.[1]?.id ?? movie.genre_ids?.[1];
 
   return (
     <div className="min-h-screen">
@@ -310,13 +330,52 @@ export default function MovieDetailPage() {
           </section>
         )}
 
-        {/* Similar */}
+        {/* Similar movies as a carousel */}
         {similar.length > 0 && (
           <section className="mt-12">
-            <h2 className="font-display text-xl font-bold text-foreground mb-4">Similar Movies</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-              {similar.map((m: TMDBMovie, i: number) => (
-                <MovieCard key={m.id} movie={m} index={i} />
+            <MovieCarousel
+              title="🎬 You Might Also Like"
+              movies={similar.filter((m: TMDBMovie) => m.id !== tmdbId)}
+              seeAllHref={primaryGenreId ? `/genre/${primaryGenreId}` : undefined}
+            />
+          </section>
+        )}
+
+        {/* Because you like [Genre 1] */}
+        {primaryGenreId && genreRec1?.results && (
+          <section className="mt-8">
+            <MovieCarousel
+              title={`💡 Because You Like ${GENRE_MAP[primaryGenreId] ?? "This Genre"}`}
+              movies={(genreRec1.results as TMDBMovie[]).filter((m: TMDBMovie) => m.id !== tmdbId).slice(0, 20)}
+              seeAllHref={`/genre/${primaryGenreId}`}
+            />
+          </section>
+        )}
+
+        {/* Because you like [Genre 2] */}
+        {secondaryGenreId && genreRec2?.results && (
+          <section className="mt-8">
+            <MovieCarousel
+              title={`🎭 More ${GENRE_MAP[secondaryGenreId] ?? "Great"} Movies`}
+              movies={(genreRec2.results as TMDBMovie[]).filter((m: TMDBMovie) => m.id !== tmdbId).slice(0, 20)}
+              seeAllHref={`/genre/${secondaryGenreId}`}
+            />
+          </section>
+        )}
+
+        {/* Genre tags */}
+        {movie.genres && movie.genres.length > 0 && (
+          <section className="mt-10">
+            <h2 className="font-display text-lg font-bold text-foreground mb-3">Browse Similar Genres</h2>
+            <div className="flex flex-wrap gap-2">
+              {movie.genres.map((g: any) => (
+                <Link
+                  key={g.id}
+                  to={`/genre/${g.id}`}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-secondary text-secondary-foreground text-sm font-medium hover:bg-primary/20 hover:text-primary transition-all"
+                >
+                  {g.name} <ArrowRight className="w-3 h-3" />
+                </Link>
               ))}
             </div>
           </section>

@@ -13,6 +13,7 @@ import WatchlistPage from "./pages/WatchlistPage";
 import ProfilePage from "./pages/ProfilePage";
 import MoodPage from "./pages/MoodPage";
 import SurprisePage from "./pages/SurprisePage";
+import GenrePage from "./pages/GenrePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/mood/:mood" element={<MoodPage />} />
             <Route path="/surprise" element={<SurprisePage />} />
+            <Route path="/genre/:id" element={<GenrePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
