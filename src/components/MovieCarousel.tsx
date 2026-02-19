@@ -1,12 +1,14 @@
 import { useRef } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import MovieCard from "./MovieCard";
 import { TMDBMovie } from "@/lib/tmdb";
+import { Link } from "react-router-dom";
 
 interface MovieCarouselProps {
   title: string;
   movies: TMDBMovie[];
   isLoading?: boolean;
+  seeAllHref?: string;
 }
 
 function SkeletonCard() {
@@ -20,7 +22,7 @@ function SkeletonCard() {
   );
 }
 
-export default function MovieCarousel({ title, movies, isLoading }: MovieCarouselProps) {
+export default function MovieCarousel({ title, movies, isLoading, seeAllHref }: MovieCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: "left" | "right") => {
@@ -33,13 +35,23 @@ export default function MovieCarousel({ title, movies, isLoading }: MovieCarouse
     <section className="relative group/carousel">
       <div className="flex items-center justify-between mb-4 px-1">
         <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground">{title}</h2>
-        <div className="flex gap-1">
-          <button onClick={() => scroll("left")} className="p-1.5 rounded-full bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors">
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button onClick={() => scroll("right")} className="p-1.5 rounded-full bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors">
-            <ChevronRight className="w-5 h-5" />
-          </button>
+        <div className="flex items-center gap-3">
+          {seeAllHref && (
+            <Link
+              to={seeAllHref}
+              className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+            >
+              See All <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          )}
+          <div className="flex gap-1">
+            <button onClick={() => scroll("left")} className="p-1.5 rounded-full bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors">
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button onClick={() => scroll("right")} className="p-1.5 rounded-full bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors">
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
       <div ref={scrollRef} className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 -mx-1 px-1">
