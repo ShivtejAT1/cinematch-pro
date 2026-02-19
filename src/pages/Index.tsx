@@ -1,14 +1,18 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getPopularMovies, getTopRatedMovies, getNowPlayingMovies, getUpcomingMovies, getTrendingMovies, getMoviesByGenre, GENRE_MAP } from "@/lib/tmdb";
+import {
+  getPopularMovies, getTopRatedMovies, getNowPlayingMovies, getUpcomingMovies,
+  getTrendingMovies, getMoviesByGenre, getOscarMovies, getCultClassics, GENRE_MAP
+} from "@/lib/tmdb";
 import HeroSection from "@/components/HeroSection";
 import MovieCarousel from "@/components/MovieCarousel";
 import MoodPicker from "@/components/MoodPicker";
+import ForYouSection from "@/components/ForYouSection";
 import { Shuffle, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
-// Curated genre showcase — pick interesting ones
 const FEATURED_GENRES = [
   { id: 28, emoji: "💥" },
   { id: 27, emoji: "👻" },
@@ -21,40 +25,104 @@ const FEATURED_GENRES = [
 ];
 
 export default function Index() {
-  const trending = useQuery({ queryKey: ["trending"], queryFn: () => getTrendingMovies("week") });
+  const [trendingWindow, setTrendingWindow] = useState<"day" | "week">("week");
+
+  const trending = useQuery({ queryKey: ["trending", trendingWindow], queryFn: () => getTrendingMovies(trendingWindow) });
   const popular = useQuery({ queryKey: ["popular"], queryFn: () => getPopularMovies() });
   const topRated = useQuery({ queryKey: ["topRated"], queryFn: () => getTopRatedMovies() });
   const nowPlaying = useQuery({ queryKey: ["nowPlaying"], queryFn: () => getNowPlayingMovies() });
   const upcoming = useQuery({ queryKey: ["upcoming"], queryFn: () => getUpcomingMovies() });
-
-  // Featured genre rows (3 genres)
   const actionMovies = useQuery({ queryKey: ["genre-home", 28], queryFn: () => getMoviesByGenre(28) });
   const horrorMovies = useQuery({ queryKey: ["genre-home", 27], queryFn: () => getMoviesByGenre(27) });
   const scifiMovies = useQuery({ queryKey: ["genre-home", 878], queryFn: () => getMoviesByGenre(878) });
+  const oscarMovies = useQuery({ queryKey: ["oscar-home"], queryFn: () => getOscarMovies() });
+  const cultMovies = useQuery({ queryKey: ["cult-home"], queryFn: () => getCultClassics() });
 
   return (
     <div className="min-h-screen">
       <HeroSection movies={trending.data?.results ?? []} isLoading={trending.isLoading} />
 
       <div className="container mx-auto px-4 space-y-10 pb-16 -mt-16 relative z-10">
-        {/* Surprise Me button */}
-        <div className="flex justify-center">
+        {/* Surprise Me + New Releases */}
+        <div className="flex flex-wrap justify-center gap-3">
           <Link to="/surprise">
             <Button size="lg" variant="outline" className="gap-2 font-display font-semibold border-primary/30 hover:border-primary hover:bg-primary/10">
               <Shuffle className="w-5 h-5" /> Surprise Me
+            </Button>
+          </Link>
+          <Link to="/new-releases">
+            <Button size="lg" variant="outline" className="gap-2 font-display font-semibold border-primary/30 hover:border-primary hover:bg-primary/10">
+              ✨ New Releases
+            </Button>
+          </Link>
+          <Link to="/collections">
+            <Button size="lg" variant="outline" className="gap-2 font-display font-semibold border-primary/30 hover:border-primary hover:bg-primary/10">
+              🏆 Special Collections
             </Button>
           </Link>
         </div>
 
         <MoodPicker />
 
-        <MovieCarousel title="🔥 Trending This Week" movies={trending.data?.results ?? []} isLoading={trending.isLoading} seeAllHref="/genre/0" />
-        <MovieCarousel title="🎬 Now Playing" movies={nowPlaying.data?.results ?? []} isLoading={nowPlaying.isLoading} seeAllHref="/genre/0" />
+        {/* For You Section */}
+        <ForYouSection />
+
+        {/* Trending with toggle */}
+        <section className="relative">
+          <div className="flex items-center justify-between mb-4 px-1 flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground">🔥 Trending</h2>
+              <div className="flex rounded-full bg-secondary p-0.5 text-xs">
+                <button
+                  onClick={() => setTrendingWindow("day")}
+                  className={`px-3 py-1 rounded-full font-medium transition-all ${trendingWindow === "day" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  Today
+                </button>
+                <button
+                  onClick={() => setTrendingWindow("week")}
+                  className={`px-3 py-1 rounded-full font-medium transition-all ${trendingWindow === "week" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  This Week
+                </button>
+              </div>
+            </div>
+            <Link to="/new-releases" className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium transition-colors">
+              See All <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <MovieCarousel title="" movies={trending.data?.results ?? []} isLoading={trending.isLoading} />
+        </section>
+
+        <MovieCarousel title="🎬 Now Playing" movies={nowPlaying.data?.results ?? []} isLoading={nowPlaying.isLoading} seeAllHref="/new-releases" />
         <MovieCarousel title="⭐ Top Rated" movies={topRated.data?.results ?? []} isLoading={topRated.isLoading} seeAllHref="/genre/18" />
         <MovieCarousel title="🍿 Popular Right Now" movies={popular.data?.results ?? []} isLoading={popular.isLoading} seeAllHref="/genre/28" />
+
+        {/* Oscar Worthy */}
+        <section>
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground">🏆 Oscar Worthy</h2>
+            <Link to="/collections" className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium transition-colors">
+              See All <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <MovieCarousel title="" movies={oscarMovies.data?.results ?? []} isLoading={oscarMovies.isLoading} />
+        </section>
+
+        {/* Cult Classics */}
+        <section>
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground">💀 Cult Classics</h2>
+            <Link to="/collections" className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium transition-colors">
+              See All <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <MovieCarousel title="" movies={cultMovies.data?.results ?? []} isLoading={cultMovies.isLoading} />
+        </section>
+
         <MovieCarousel title="📅 Coming Soon" movies={upcoming.data?.results ?? []} isLoading={upcoming.isLoading} />
 
-        {/* Browse by Genre shelf */}
+        {/* Browse by Genre */}
         <section>
           <div className="flex items-center justify-between mb-5 px-1">
             <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground">🎭 Browse by Genre</h2>
@@ -79,7 +147,6 @@ export default function Index() {
           </div>
         </section>
 
-        {/* Genre rows */}
         <MovieCarousel title="💥 Action & Adventure" movies={actionMovies.data?.results ?? []} isLoading={actionMovies.isLoading} seeAllHref="/genre/28" />
         <MovieCarousel title="👻 Horror" movies={horrorMovies.data?.results ?? []} isLoading={horrorMovies.isLoading} seeAllHref="/genre/27" />
         <MovieCarousel title="🚀 Sci-Fi" movies={scifiMovies.data?.results ?? []} isLoading={scifiMovies.isLoading} seeAllHref="/genre/878" />

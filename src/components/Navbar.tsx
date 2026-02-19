@@ -134,7 +134,17 @@ export default function Navbar() {
         </form>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-1">
+          <Link to="/new-releases">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground text-xs">
+              ✨ New
+            </Button>
+          </Link>
+          <Link to="/collections">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground text-xs">
+              🏆 Collections
+            </Button>
+          </Link>
           {user ? (
             <>
               <Link to="/watchlist">
@@ -184,6 +194,12 @@ export default function Navbar() {
           </form>
           {user ? (
             <div className="flex flex-col gap-1">
+              <Link to="/new-releases" onClick={() => setMobileOpen(false)} className="p-2 rounded-md hover:bg-secondary text-foreground flex items-center gap-2">
+                ✨ New Releases
+              </Link>
+              <Link to="/collections" onClick={() => setMobileOpen(false)} className="p-2 rounded-md hover:bg-secondary text-foreground flex items-center gap-2">
+                🏆 Special Collections
+              </Link>
               <Link to="/watchlist" onClick={() => setMobileOpen(false)} className="p-2 rounded-md hover:bg-secondary text-foreground flex items-center gap-2">
                 <Bookmark className="w-4 h-4" /> Watchlist
               </Link>
@@ -195,9 +211,17 @@ export default function Navbar() {
               </button>
             </div>
           ) : (
-            <Link to="/auth" onClick={() => setMobileOpen(false)}>
-              <Button className="w-full font-semibold">Sign In</Button>
-            </Link>
+            <div className="flex flex-col gap-1">
+              <Link to="/new-releases" onClick={() => setMobileOpen(false)} className="p-2 rounded-md hover:bg-secondary text-foreground flex items-center gap-2">
+                ✨ New Releases
+              </Link>
+              <Link to="/collections" onClick={() => setMobileOpen(false)} className="p-2 rounded-md hover:bg-secondary text-foreground flex items-center gap-2">
+                🏆 Special Collections
+              </Link>
+              <Link to="/auth" onClick={() => setMobileOpen(false)}>
+                <Button className="w-full font-semibold mt-1">Sign In</Button>
+              </Link>
+            </div>
           )}
         </div>
       )}
