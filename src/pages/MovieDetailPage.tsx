@@ -296,19 +296,19 @@ export default function MovieDetailPage() {
             <h2 className="font-display text-xl font-bold text-foreground mb-4">Cast</h2>
             <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
               {cast.map((person: any) => (
-                <div key={person.id} className="shrink-0 w-[100px] text-center">
-                  <div className="w-[100px] h-[100px] rounded-full overflow-hidden bg-secondary mx-auto mb-2">
+                <Link key={person.id} to={`/actor/${person.id}`} className="shrink-0 w-[100px] text-center group hover-lift">
+                  <div className="w-[100px] h-[100px] rounded-full overflow-hidden bg-secondary mx-auto mb-2 ring-2 ring-transparent group-hover:ring-primary transition-all duration-300">
                     {person.profile_path ? (
-                      <img src={getImageUrl(person.profile_path, "w185")} alt={person.name} className="w-full h-full object-cover" />
+                      <img src={getImageUrl(person.profile_path, "w185")} alt={person.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground text-2xl font-display">
                         {person.name[0]}
                       </div>
                     )}
                   </div>
-                  <p className="text-xs font-semibold text-foreground truncate">{person.name}</p>
+                  <p className="text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors">{person.name}</p>
                   <p className="text-xs text-muted-foreground truncate">{person.character}</p>
-                </div>
+                </Link>
               ))}
             </div>
           </section>

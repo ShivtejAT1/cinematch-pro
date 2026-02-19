@@ -63,6 +63,56 @@ export async function getMoviesByGenre(genreId: number, page = 1) {
   return tmdbFetch("/discover/movie", { with_genres: String(genreId), sort_by: "popularity.desc", page: String(page) });
 }
 
+export async function getPersonDetails(personId: number) {
+  return tmdbFetch(`/person/${personId}`, { append_to_response: "movie_credits,images" });
+}
+
+export async function getNewReleases(page = 1) {
+  const now = new Date();
+  const from = new Date(now.getFullYear(), now.getMonth() - 3, 1).toISOString().split("T")[0];
+  const to = now.toISOString().split("T")[0];
+  return tmdbFetch("/discover/movie", {
+    sort_by: "release_date.desc",
+    "primary_release_date.gte": from,
+    "primary_release_date.lte": to,
+    "vote_count.gte": "10",
+    page: String(page),
+  });
+}
+
+export async function getOscarMovies(page = 1) {
+  // Award-winning: high vote average, many votes, well-known award-season timeframe
+  return tmdbFetch("/discover/movie", {
+    sort_by: "vote_average.desc",
+    "vote_count.gte": "1000",
+    "vote_average.gte": "7.5",
+    with_genres: "18,36,10752",
+    page: String(page),
+  });
+}
+
+export async function getCultClassics(page = 1) {
+  // Cult films: older, highly rated, specific genres
+  return tmdbFetch("/discover/movie", {
+    sort_by: "vote_average.desc",
+    "primary_release_date.lte": "2000-01-01",
+    "vote_count.gte": "500",
+    "vote_average.gte": "7.0",
+    page: String(page),
+  });
+}
+
+export async function getMoviesByDecade(decade: string, page = 1) {
+  const from = `${decade}-01-01`;
+  const to = `${Number(decade) + 9}-12-31`;
+  return tmdbFetch("/discover/movie", {
+    sort_by: "popularity.desc",
+    "primary_release_date.gte": from,
+    "primary_release_date.lte": to,
+    page: String(page),
+  });
+}
+
 export const GENRE_MAP: Record<number, string> = {
   28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy",
   80: "Crime", 99: "Documentary", 18: "Drama", 10751: "Family",
