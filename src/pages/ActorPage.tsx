@@ -31,9 +31,13 @@ export default function ActorPage() {
     );
   }
 
-  // Sort movies by popularity, deduplicate
+  // For directors, pull from crew credits (job=Director); for actors, use cast
+  const isDirector = person.known_for_department === "Directing";
   const seen = new Set<number>();
-  const movies = (person.movie_credits?.cast ?? [])
+  const sourceList = isDirector
+    ? (person.movie_credits?.crew ?? []).filter((m: any) => m.job === "Director")
+    : (person.movie_credits?.cast ?? []);
+  const movies = sourceList
     .filter((m: any) => {
       if (seen.has(m.id)) return false;
       seen.add(m.id);
@@ -115,7 +119,8 @@ export default function ActorPage() {
         {/* Filmography */}
         <section>
           <h2 className="font-display text-2xl font-bold text-foreground mb-6">
-            🎬 Filmography <span className="text-muted-foreground text-lg font-normal">({movies.length} movies)</span>
+            🎬 {person.known_for_department === "Directing" ? "Directed Films" : "Filmography"}{" "}
+            <span className="text-muted-foreground text-lg font-normal">({movies.length} movies)</span>
           </h2>
           <motion.div
             layout

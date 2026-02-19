@@ -184,7 +184,17 @@ export default function MovieDetailPage() {
               ))}
             </div>
 
-            {director && <p className="text-sm text-muted-foreground">Directed by <span className="text-foreground font-medium">{director.name}</span></p>}
+            {director && (
+              <p className="text-sm text-muted-foreground">
+                Directed by{" "}
+                <Link
+                  to={`/actor/${director.id}`}
+                  className="text-foreground font-medium hover:text-primary transition-colors underline-offset-2 hover:underline"
+                >
+                  {director.name}
+                </Link>
+              </p>
+            )}
 
             <p className="text-foreground/80 leading-relaxed">{movie.overview}</p>
 
