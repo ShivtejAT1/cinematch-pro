@@ -73,6 +73,13 @@ export default function NewReleasesPage() {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
+          <button
+            onClick={() => window.history.back()}
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors text-sm mb-4"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            Back
+          </button>
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-2">
             🎬 New & Trending
           </h1>

@@ -36,6 +36,13 @@ export default function WatchlistPage() {
 
   return (
     <div className="min-h-screen pt-24 pb-16 container mx-auto px-4">
+      <button
+        onClick={() => window.history.back()}
+        className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors text-sm mb-6"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+        Back
+      </button>
       <h1 className="font-display text-3xl font-bold text-foreground mb-8">My Watchlist</h1>
 
       {isLoading ? (

@@ -156,6 +156,16 @@ export default function MovieDetailPage() {
 
   return (
     <div className="min-h-screen">
+      {/* Back button */}
+      <div className="absolute top-20 left-4 z-20">
+        <button
+          onClick={() => window.history.back()}
+          className="flex items-center gap-1 text-white/80 hover:text-white transition-colors text-sm bg-background/40 backdrop-blur-sm px-3 py-1.5 rounded-full"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          Back
+        </button>
+      </div>
       {/* Backdrop */}
       <div className="relative h-[50vh] min-h-[400px]">
         <img src={getBackdropUrl(movie.backdrop_path)} alt="" className="w-full h-full object-cover" />
