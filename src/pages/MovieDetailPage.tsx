@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getMovieDetails, getImageUrl, getBackdropUrl, GENRE_MAP, TMDBMovie } from "@/lib/tmdb";
 import { useAuth } from "@/lib/auth";
@@ -16,6 +16,7 @@ export default function MovieDetailPage() {
   const tmdbId = Number(id);
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [notes, setNotes] = useState("");
 
   const { data: movie, isLoading } = useQuery({
@@ -168,69 +169,83 @@ export default function MovieDetailPage() {
             <p className="text-foreground/80 leading-relaxed">{movie.overview}</p>
 
             {/* User actions */}
-            {user && (
-              <div className="space-y-4 pt-2">
-                <div className="flex flex-wrap gap-3">
-                  <Button variant="outline" onClick={() => watchlistMutation.mutate()} className="gap-2">
-                    {inWatchlist ? <BookmarkCheck className="w-4 h-4 text-primary" /> : <Bookmark className="w-4 h-4" />}
-                    {inWatchlist ? "In Watchlist" : "Add to Watchlist"}
+            <div className="space-y-4 pt-2">
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => user ? watchlistMutation.mutate() : navigate("/auth")}
+                  className="gap-2"
+                >
+                  {inWatchlist ? <BookmarkCheck className="w-4 h-4 text-primary" /> : <Bookmark className="w-4 h-4" />}
+                  {inWatchlist ? "In Watchlist" : "Add to Watchlist"}
+                </Button>
+                {isWatched ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => user ? watchedMutation.mutate() : navigate("/auth")}
+                    className="gap-2 border-primary/40 text-primary"
+                  >
+                    <Eye className="w-4 h-4" />
+                    Watched ✓
                   </Button>
-                  {isWatched ? (
-                    <Button variant="outline" onClick={() => watchedMutation.mutate()} className="gap-2 border-primary/40 text-primary">
-                      <Eye className="w-4 h-4" />
-                      Watched ✓
-                    </Button>
-                  ) : (
-                    <Button variant="outline" onClick={() => watchedMutation.mutate()} className="gap-2">
-                      <Eye className="w-4 h-4" />
-                      Mark Watched
-                    </Button>
-                  )}
-                  {!isWatched && (
-                    <Button onClick={handleWatchAndReview} className="gap-2">
-                      <MessageSquare className="w-4 h-4" />
-                      I've Watched This — Rate & Review
-                    </Button>
-                  )}
-                </div>
-
-                {/* Rating & Review — only if watched */}
-                {(isWatched || showReview) ? (
-                  <div className="glass-panel rounded-xl p-5 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
-                        <Star className="w-4 h-4 text-primary" /> Your Review
-                      </h3>
-                      {userRating && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => clearRatingMutation.mutate()}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1 text-xs"
-                        >
-                          <Trash2 className="w-3 h-3" /> Clear Rating
-                        </Button>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1.5">Rating</p>
-                      <StarRating rating={userRating?.rating ?? 0} onRate={(r) => rateMutation.mutate(r)} size="lg" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1.5">Notes (optional)</p>
-                      <textarea
-                        value={notes || userRating?.notes || ""}
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="What did you think about this movie?"
-                        className="w-full h-20 px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
-                      />
-                    </div>
-                  </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground italic">Mark as watched or click "I've Watched This" to rate & review</p>
+                  <Button
+                    variant="outline"
+                    onClick={() => user ? watchedMutation.mutate() : navigate("/auth")}
+                    className="gap-2"
+                  >
+                    <Eye className="w-4 h-4" />
+                    Mark Watched
+                  </Button>
+                )}
+                {!isWatched && (
+                  <Button onClick={() => user ? handleWatchAndReview() : navigate("/auth")} className="gap-2">
+                    <MessageSquare className="w-4 h-4" />
+                    I've Watched This — Rate & Review
+                  </Button>
                 )}
               </div>
-            )}
+
+              {/* Rating & Review — only if logged in and watched */}
+              {user && (isWatched || showReview) ? (
+                <div className="glass-panel rounded-xl p-5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
+                      <Star className="w-4 h-4 text-primary" /> Your Review
+                    </h3>
+                    {userRating && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => clearRatingMutation.mutate()}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1 text-xs"
+                      >
+                        <Trash2 className="w-3 h-3" /> Clear Rating
+                      </Button>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1.5">Rating</p>
+                    <StarRating rating={userRating?.rating ?? 0} onRate={(r) => rateMutation.mutate(r)} size="lg" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1.5">Notes (optional)</p>
+                    <textarea
+                      value={notes || userRating?.notes || ""}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="What did you think about this movie?"
+                      className="w-full h-20 px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                    />
+                  </div>
+                </div>
+              ) : user ? (
+                <p className="text-xs text-muted-foreground italic">Mark as watched or click "I've Watched This" to rate & review</p>
+              ) : (
+                <p className="text-xs text-muted-foreground italic">
+                  <button onClick={() => navigate("/auth")} className="text-primary underline underline-offset-2 hover:opacity-80 transition-opacity">Sign in</button> to track, rate, and review this movie
+                </p>
+              )}
+            </div>
 
             {/* Streaming */}
             {providers.length > 0 && (
