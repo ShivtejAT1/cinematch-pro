@@ -106,6 +106,13 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen pt-24 pb-16 container mx-auto px-4">
+      <button
+        onClick={() => window.history.back()}
+        className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors text-sm mb-6"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+        Back
+      </button>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         {/* Profile header */}
         <div className="glass-panel rounded-2xl p-8 max-w-4xl mx-auto mb-8">
